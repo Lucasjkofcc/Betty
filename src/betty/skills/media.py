@@ -39,6 +39,6 @@ def retomar_midias(players):
             stderr=sp.DEVNULL,
         )
 def pausar_temporario():
-    sp.Popen(["playerctl", "pause"])
+    sp.Popen(["playerctl", "pause"],stderr=sp.DEVNULL, stdout=sp.DEVNULL)
 def retomar_temporario():
-    sp.Popen(["playerctl", "play"])
+    sp.Popen(["playerctl", "play"],stderr=sp.DEVNULL, stdout=sp.DEVNULL)
