@@ -20,6 +20,19 @@ INTERVALO = 0.2  # Cerca de 5 detecções por segundo
 mostrar_deteccao = threading.Event()
 
 
+def has_camera() -> bool:
+    cap = None
+    try:
+        cap = cv2.VideoCapture(0)
+        return cap.isOpened()
+    except cv2.error as error:
+        print(f"[Betty] Não foi possível verificar a câmera: {error}")
+        return False
+    finally:
+        if cap is not None:
+            cap.release()
+
+
 def facial_check():
     cv2.utils.logging.setLogLevel(
         cv2.utils.logging.LOG_LEVEL_SILENT
@@ -40,12 +53,14 @@ def facial_check():
 
     cap = cv2.VideoCapture(0)
 
+    if not cap.isOpened():
+        cap.release()
+        print("[Betty] Câmera indisponível; detecção facial desativada.")
+        return
+
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, RESOLUCAO[0])
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, RESOLUCAO[1])
     cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-
-    if not cap.isOpened():
-        raise RuntimeError("Erro ao abrir a câmera.")
 
     try:
         while True:

@@ -1,4 +1,4 @@
-from .battery import battery_check, get_battery
+from .battery import battery_check, get_battery, has_battery
 from .tts import speak, audio_queue
 from .stt import listen
 from .program import open_program, open_steam_game
@@ -18,7 +18,7 @@ from .web import search_web
 from .poweroff import poweroff, reboot
 from .calculator import calcular
 from .tela import ocr, analyze_screen
-from .facial_check import facial_check
+from .facial_check import facial_check, has_camera
 from .temperature import get_temperature
 from .media import pausar_midias, retomar_midias, pausar_temporario, retomar_temporario
 from .attention import (

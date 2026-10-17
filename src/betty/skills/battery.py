@@ -1,20 +1,34 @@
 import psutil
 
 
-def get_battery():
-    battery = psutil.sensors_battery().percent
+def has_battery() -> bool:
+    try:
+        return psutil.sensors_battery() is not None
+    except (NotImplementedError, OSError) as error:
+        print(f"[Betty] Não foi possível verificar a bateria: {error}")
+        return False
+
+
+def get_battery() -> int | None:
+    battery = psutil.sensors_battery()
+    if battery is None or battery.percent is None:
+        return None
+    return int(battery.percent)
+
+
+def get_plugged() -> bool | None:
+    battery = psutil.sensors_battery()
     if battery is None:
         return None
-    return int(battery)
+    return battery.power_plugged
 
 
-def get_plugged():
-    return psutil.sensors_battery().power_plugged
-
-
-def battery_check():
+def battery_check() -> str | None:
     battery = get_battery()
     plugged = get_plugged()
+
+    if battery is None or plugged is None:
+        return None
 
     if battery <= 15 and not plugged:
         return f"Francamente, a bateria está em {battery} por cento e caindo. Coloque para carregar agora mesmo, eu diria."

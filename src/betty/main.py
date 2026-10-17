@@ -6,6 +6,8 @@ import random
 from .skills import (
     battery_check,
     get_battery,
+    has_battery,
+    has_camera,
     speak,
     listen,
     get_time,
@@ -55,6 +57,7 @@ print("[Betty] iniciada, eu diria")
 modo_voz = False
 task_in_progress = threading.Event()
 screen_task_in_progress = threading.Event()
+battery_available = False
 
 
 
@@ -69,9 +72,9 @@ def responder(texto, *, personalizar=True, fala=None):
     finally:
         retomar_temporario()
 
-def monitor():
+def monitor(*, check_battery: bool):
     while True:
-        bateria = battery_check()
+        bateria = battery_check() if check_battery else None
 
         if bateria:
             print(f"[Betty] {bateria}")
@@ -135,7 +138,16 @@ def _processar_comando(comando):
         responder(resultado)
 
     elif acao == "BATTERY":
-        resultado = f"Bateria em {get_battery()} por cento."
+        if not battery_available:
+            responder("Este dispositivo não possui uma bateria disponível.")
+            return
+
+        battery = get_battery()
+        if battery is None:
+            responder("Não foi possível obter o nível da bateria.")
+            return
+
+        resultado = f"Bateria em {battery} por cento."
         responder(resultado)
 
     elif acao == "CPU":
@@ -338,13 +350,33 @@ def main():
             processar_comando(comando)
 
 
-monitor_thread = threading.Thread(target=monitor, daemon=True)
-monitor_thread.start()
-
-
 def run():
-    facial_check_thread = threading.Thread(target=facial_check, daemon=True)
-    facial_check_thread.start()
+    global battery_available
+
+    battery_available = has_battery()
+    camera_available = has_camera()
+
+    if battery_available:
+        print("[Betty] Bateria detectada; monitoramento ativado.")
+    else:
+        print("[Betty] Bateria não detectada; funções de bateria desativadas.")
+
+    if camera_available:
+        facial_check_thread = threading.Thread(
+            target=facial_check,
+            daemon=True,
+        )
+        facial_check_thread.start()
+    else:
+        print("[Betty] Câmera não detectada; detecção facial desativada.")
+
+    monitor_thread = threading.Thread(
+        target=monitor,
+        kwargs={"check_battery": battery_available},
+        daemon=True,
+    )
+    monitor_thread.start()
+
     screen_monitor_thread = threading.Thread(target=monitor_screen, daemon=True)
     screen_monitor_thread.start()
     mouse_activity_thread = threading.Thread(
