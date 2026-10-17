@@ -35,6 +35,7 @@ from .skills import (
     monitor_attention,
     monitor_mouse_activity,
     mouse_active_within,
+    monitor_spelling,
     register_interaction,
 )
 
@@ -384,6 +385,11 @@ def run():
         daemon=True,
     )
     mouse_activity_thread.start()
+    spelling_thread = threading.Thread(
+        target=monitor_spelling,
+        daemon=True,
+    )
+    spelling_thread.start()
     attention_thread = threading.Thread(
         target=monitor_attention,
         args=(

@@ -46,6 +46,13 @@ Assistente virtual em Python para controle de sistema, voz, pesquisa, automaçã
 - Monitor de mouse (`skills/mouse_activity.py`)
   - `monitor_mouse_activity()` consulta a posição do cursor via `hyprctl`
   - `mouse_active_within()` considera o PC ativo se o mouse se moveu nos últimos 5 minutos
+- Corretor ortográfico (`skills/spelling.py`)
+  - Monitora campos de texto editáveis expostos pelo AT-SPI, em sessões Wayland e X11
+  - Verifica português brasileiro com um servidor LanguageTool local (`http://127.0.0.1:8081`)
+  - Exibe uma notificação discreta com comentário da Betty e ações para aceitar ou ignorar a correção
+  - Só altera o campo se o texto continuar igual ao que foi verificado; campos sem suporte de acessibilidade e campos de senha são ignorados
+  - O servidor LanguageTool precisa estar instalado e em execução localmente. A URL pode ser alterada com `BETTY_LANGUAGETOOL_URL`, mas deve continuar apontando para um IP loopback (`127.0.0.1` ou `::1`); texto digitado não é enviado a serviços remotos
+  - A captura depende de o aplicativo expor texto editável pelo AT-SPI e de a acessibilidade estar habilitada no ambiente gráfico. Em alguns desktops, é necessário habilitar a acessibilidade nas configurações do sistema; a cobertura pode variar entre aplicativos
 
 ### 2. Interação com o usuário
 

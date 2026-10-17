@@ -30,3 +30,4 @@ from .attention import (
     register_interaction,
 )
 from .mouse_activity import monitor_mouse_activity, mouse_active_within
+from .spelling import monitor_spelling
