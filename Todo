@@ -1,0 +1,17 @@
+[X] Reconhecimento facial / detecção de presença
+    - Se nenhum rosto for detectado por 30s:
+      - pausar players (YouTube, Spotify etc.)
+      - bloquear a sessão
+    - Se um rosto voltar antes dos 30s, cancelar o bloqueio
+- [X] Voz
+  - [X] Speech-to-text
+  - [X] Comandos por voz
+  - [ ] Controle de teclado por voz
+  - [X] OCR de tela
+  - [X] "Betty, leia" → OCR + TTS
+  - [ ] Integração com DDLC
+- [ ] Aleatório legal pra cacete
+ - [ ] Betty pedir pizza
+ - [ ] AR-CONDICIONADO
+-  [ ] Reclema se eu tiver até tarde no pc
+[X] Adicionar memoria
