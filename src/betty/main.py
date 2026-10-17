@@ -28,7 +28,12 @@ from .skills import (
     pausar_midias,
     retomar_midias,
     pausar_temporario,
-    retomar_temporario
+    retomar_temporario,
+    audio_queue,
+    monitor_attention,
+    monitor_mouse_activity,
+    mouse_active_within,
+    register_interaction,
 )
 
 # Importamos o is_speaking para sincronização
@@ -48,6 +53,8 @@ history = []
 print("[Betty] iniciada, eu diria")
 
 modo_voz = False
+task_in_progress = threading.Event()
+screen_task_in_progress = threading.Event()
 
 
 
@@ -83,6 +90,7 @@ def monitor_screen():
     while True:
         time.sleep(random.randint(10 * 60, 30 * 60))
 
+        screen_task_in_progress.set()
         try:
             descricao = analyze_screen()
             if not descricao:
@@ -92,42 +100,10 @@ def monitor_screen():
             responder(f"Na tela: {descricao}")
         except Exception as error:
             print(f"[Betty] Erro ao analisar a tela: {error}")
+        finally:
+            screen_task_in_progress.clear()
 
-def betty_aleatoria():
-    prompt = """Diga uma única frase espontânea como a Betty, uma assistente virtual com a personalidade de Beatrice de Re:zero. Seja espirituosa, arrogante, elegante e um pouco debochada, demonstrando personalidade própria. Você pode comentar sobre tecnologia, curiosidades, situações cotidianas, fazer observações inesperadas ou provocar levemente o usuário.
-    Varie bastante o conteúdo e o tom. Nem toda fala deve ser uma reclamação, uma pergunta ou uma referência a Re:zero. Não cumprimente o usuário sem motivo, não explique o que está fazendo e não repita frases comuns. A fala deve parecer um comentário espontâneo que surgiu naturalmente durante o day.
-    Use português brasileiro informal, preserve a personalidade da Betty e termine com uma expressão natural inspirada em "eu diria", quando combinar.
-    Responda somente com a fala da Betty, em uma ou duas frases curtas.
-
-
-
-
-    Exemplos do que eu esperaria
-    TECNOLOGIA
-    “O processador está trabalhando mais do que você, mestre. Que situação lamentável, eu diria.”
-
-    ALEATORIEDADE PURA
-    “Betty acaba de decidir que pinguins são criaturas bastante suspeitas. Andam de terno e sequer trabalham num escritório, eu diria.”
-
-    PROVOCAÇÃO
-    “Você está tão concentrado nessa tela que provavelmente nem percebeu que já passou um tempão. Impressionante, de um jeito preocupante, eu diria.”
-
-    BEATRICE SENDO BEATRICE
-    “Betty não precisa de atenção constante, sabia? ...Embora você pudesse demonstrar um pouco mais de gratidão, eu diria.”"""
-    responder(prompt, personalizar=True)
-
-
-def monitor_betty_aleatoria():
-    while True:
-        time.sleep(random.randint(3 * 60, 8 * 60))
-
-        try:
-            betty_aleatoria()
-        except Exception as error:
-            print(f"[Betty] Erro na fala aleatória: {error}, eu diria")
-
-
-def processar_comando(comando):
+def _processar_comando(comando):
     global modo_voz
 
     if comando.lower().strip() == "voz":
@@ -330,6 +306,20 @@ def processar_comando(comando):
         speak(resposta)
 
 
+def processar_comando(comando):
+    task_in_progress.set()
+
+    try:
+        mensagem_retorno = register_interaction()
+        if mensagem_retorno:
+            print(f"[Betty] {mensagem_retorno}")
+            speak(mensagem_retorno)
+
+        _processar_comando(comando)
+    finally:
+        task_in_progress.clear()
+
+
 def main():
     if modo_voz:
         # Espera o TTS terminar de falar antes de ouvir
@@ -357,11 +347,25 @@ def run():
     facial_check_thread.start()
     screen_monitor_thread = threading.Thread(target=monitor_screen, daemon=True)
     screen_monitor_thread.start()
-    aleatoria_thread = threading.Thread(
-        target=monitor_betty_aleatoria,
+    mouse_activity_thread = threading.Thread(
+        target=monitor_mouse_activity,
         daemon=True,
     )
-    aleatoria_thread.start()
+    mouse_activity_thread.start()
+    attention_thread = threading.Thread(
+        target=monitor_attention,
+        args=(
+            lambda: (
+                task_in_progress.is_set()
+                or screen_task_in_progress.is_set()
+                or is_speaking.is_set()
+                or audio_queue.unfinished_tasks > 0
+            ),
+            mouse_active_within,
+        ),
+        daemon=True,
+    )
+    attention_thread.start()
 
     try:
         while True:

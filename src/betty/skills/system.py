@@ -2,11 +2,7 @@ from datetime import datetime
 import psutil
 
 def uptime_info():
-    boot = datetime.fromtimestamp(psutil.boot_time())
-    agora = datetime.now()
-
-    uptime = agora - boot
-    segundos = int(uptime.total_seconds())
+    segundos = int(get_uptime_seconds())
 
     dias, resto = divmod(segundos, 86400)
     horas, resto = divmod(resto, 3600)
@@ -24,6 +20,12 @@ def uptime_info():
         partes.append(f"{minutos} {'minuto' if minutos == 1 else 'minutos'}")
 
     return "O sistema está ligado há " + ", ".join(partes) + "."
+
+
+def get_uptime_seconds() -> float:
+    boot = datetime.fromtimestamp(psutil.boot_time())
+    return (datetime.now() - boot).total_seconds()
+
 
 def cpu_percent():
     return psutil.cpu_percent(interval=1)

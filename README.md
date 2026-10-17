@@ -33,11 +33,19 @@ Assistente virtual em Python para controle de sistema, voz, pesquisa, automaçã
 - `monitor_screen()`
   - Analisa a tela em intervalos aleatórios e responde com descrição do conteúdo
 
-- `betty_aleatoria()`
-  - Gera falas espontâneas com personalidade da Betty
-
-- `monitor_betty_aleatoria()`
-  - Agenda falas aleatórias em intervalos regulares
+- Sistema de atenção (`skills/attention.py`)
+  - Mantém estados de atenção e aumenta a irritação conforme o tempo sem interação
+  - Escolhe aleatoriamente entre várias frases em cada nível: 5, 15 e 30 minutos; 1, 3, 6, 12 e 24 horas
+  - Depois de 24 horas, continua falando a cada 3 horas com frases do nível máximo
+  - Ao receber uma nova interação após 15 minutos, escolhe uma reação aleatória compatível com o tempo de ausência
+  - Reclama progressivamente do uptime após 8, 12, 24, 36, 48 e 60 horas
+  - Ao completar 3 dias de uptime, recomenda reiniciar o PC sem fazê-lo automaticamente
+  - Da meia-noite às 3h59, reclama em níveis crescentes se detectar movimento recente do mouse
+  - Entre 4h e 5h59, dá uma última fala de desistência e não repete durante a manhã
+  - Adia as falas de atenção enquanto a Betty está falando ou executando uma tarefa
+- Monitor de mouse (`skills/mouse_activity.py`)
+  - `monitor_mouse_activity()` consulta a posição do cursor via `hyprctl`
+  - `mouse_active_within()` considera o PC ativo se o mouse se moveu nos últimos 5 minutos
 
 ### 2. Interação com o usuário
 
@@ -133,6 +141,9 @@ Assistente virtual em Python para controle de sistema, voz, pesquisa, automaçã
 
 - `uptime_info()`
   - Tempo desde o último boot
+
+- `get_uptime_seconds()`
+  - Retorna o uptime em segundos para verificações de duração
 
 - `get_temperature()`
   - Temperatura atual do sistema
