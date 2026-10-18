@@ -28,8 +28,6 @@ from .skills import (
     analyze_screen,
     facial_check,
     get_temperature,
-    pausar_midias,
-    retomar_midias,
     pausar_temporario,
     retomar_temporario,
     proxima_media,

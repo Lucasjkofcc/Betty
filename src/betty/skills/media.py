@@ -27,4 +27,3 @@ if sys.platform.startswith("linux"):
 
     def anterior_media():
         sp.Popen(["playerctl", "previous"],stderr=sp.DEVNULL, stdout=sp.DEVNULL)
-

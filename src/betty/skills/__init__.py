@@ -21,8 +21,6 @@ from .tela import ocr, analyze_screen
 from .facial_check import facial_check, has_camera
 from .temperature import get_temperature
 from .media import (
-    pausar_midias,
-    retomar_midias,
     pausar_temporario,
     retomar_temporario,
     proxima_media,
