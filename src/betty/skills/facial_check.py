@@ -23,6 +23,9 @@ mostrar_deteccao = threading.Event()
 def has_camera() -> bool:
     cap = None
     try:
+        cv2.utils.logging.setLogLevel(
+            cv2.utils.logging.LOG_LEVEL_SILENT
+        )
         cap = cv2.VideoCapture(0)
         return cap.isOpened()
     except cv2.error as error:
@@ -34,10 +37,6 @@ def has_camera() -> bool:
 
 
 def facial_check():
-    cv2.utils.logging.setLogLevel(
-        cv2.utils.logging.LOG_LEVEL_SILENT
-    )
-
     tempo_delay = 15
     ultimo_rosto = time.monotonic()
     bloqueado = False

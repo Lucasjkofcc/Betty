@@ -20,7 +20,14 @@ from .calculator import calcular
 from .tela import ocr, analyze_screen
 from .facial_check import facial_check, has_camera
 from .temperature import get_temperature
-from .media import pausar_midias, retomar_midias, pausar_temporario, retomar_temporario
+from .media import (
+    pausar_midias,
+    retomar_midias,
+    pausar_temporario,
+    retomar_temporario,
+    proxima_media,
+    anterior_media,
+)
 from .attention import (
     check_attention,
     check_night_attention,

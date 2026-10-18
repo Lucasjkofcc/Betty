@@ -79,6 +79,8 @@ TEMPERATURE
 VOLUME_NOW
 VOLUME_UP
 VOLUME_DOWN
+NEXT_MEDIA
+PREVIOUS_MEDIA
 POWEROFF
 REBOOT
 MUTE
@@ -233,6 +235,19 @@ Usuário: qual é a temperatura
 TEMPERATURE
 Usuário: temperatura atual
 TEMPERATURE
+
+Usuário: próxima música
+NEXT_MEDIA
+
+Usuário: próxima mídia
+NEXT_MEDIA
+
+Usuário: música anterior
+PREVIOUS_MEDIA
+
+Usuário: mídia anterior
+PREVIOUS_MEDIA
+
 Usuário: conte uma piada
 UNKNOWN
 
@@ -329,6 +344,7 @@ Reescreva a resposta pronta abaixo com a personalidade da Betty, em português b
 Mantenha o significado, os fatos, os nomes, as unidades e as informações da resposta original.
 Inclua obrigatoriamente uma reclamação curta, sarcástica e afetuosa, sem acrescentar fatos.
 Não mencione bateria, CPU, clima ou qualquer outro assunto que não apareça na resposta original.
+Nunca invente alertas ou estados de bateria; só fale sobre bateria se a resposta original mencionar isso.
 Altere somente a forma de falar e responda em no máximo duas frases curtas.
 {regra_valores}
 Não use "eu diria"; o sistema adicionará essa expressão ao final.

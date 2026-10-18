@@ -359,6 +359,7 @@ def monitor_attention(
                 message = check_uptime_attention(get_uptime_seconds())
 
         if message:
+            print(f"[Betty] {message}")
             speak(message)
 
         time.sleep(CHECK_INTERVAL)

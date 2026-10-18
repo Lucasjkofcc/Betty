@@ -24,13 +24,16 @@ from .skills import (
     poweroff,
     reboot,
     calcular,
-    ocr as read_screen,
+    ocr,
+    analyze_screen,
     facial_check,
     get_temperature,
     pausar_midias,
     retomar_midias,
     pausar_temporario,
     retomar_temporario,
+    proxima_media,
+    anterior_media,
     audio_queue,
     monitor_attention,
     monitor_mouse_activity,
@@ -205,6 +208,12 @@ def _processar_comando(comando):
 
         responder(resultado)
 
+    elif acao == "NEXT_MEDIA":
+        proxima_media()
+
+    elif acao == "PREVIOUS_MEDIA":
+        anterior_media()
+
     elif acao.startswith("OPEN_PROGRAM"):
         partes = acao.split(maxsplit=1)
 
@@ -304,7 +313,7 @@ def _processar_comando(comando):
         else:
             responder(f"O resultado é: {resultado}.")
     elif acao == "READ_SCREEN":
-        resultado = read_screen()
+        resultado = analyze_screen()
         responder(f"Li: {resultado}.")
 
     elif acao == "UNKNOWN":

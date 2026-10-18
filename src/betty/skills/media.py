@@ -42,3 +42,19 @@ def pausar_temporario():
     sp.Popen(["playerctl", "pause"],stderr=sp.DEVNULL, stdout=sp.DEVNULL)
 def retomar_temporario():
     sp.Popen(["playerctl", "play"],stderr=sp.DEVNULL, stdout=sp.DEVNULL)
+
+
+def proxima_media():
+    sp.Popen(["playerctl", "next"],stderr=sp.DEVNULL, stdout=sp.DEVNULL)
+
+
+def anterior_media():
+    sp.Popen(["playerctl", "previous"],stderr=sp.DEVNULL, stdout=sp.DEVNULL)
+
+
+def proxima_midia():
+    return proxima_media()
+
+
+def anterior_midia():
+    return anterior_media()

@@ -207,6 +207,12 @@ Assistente virtual em Python para controle de sistema, voz, pesquisa, automaçã
 - `retomar_temporario()`
   - Retoma a reprodução de áudio após pausa temporária
 
+- `proxima_media()`
+  - Avança para a próxima mídia em reprodução
+
+- `anterior_media()`
+  - Volta para a mídia anterior
+
 - `musica(comando)`
   - Comandos simples para controle de mídia via `playerctl`
   - Ações: `proxima`, `anterior`, `pausar`, `continuar`
@@ -265,6 +271,8 @@ A Betty classifica comandos em ações como:
 - `VOLUME_NOW`
 - `VOLUME_UP`
 - `VOLUME_DOWN`
+- `NEXT_MEDIA`
+- `PREVIOUS_MEDIA`
 - `POWEROFF`
 - `REBOOT`
 - `MUTE`
