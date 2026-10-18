@@ -247,7 +247,14 @@ PREVIOUS_MEDIA
 
 Usuário: mídia anterior
 PREVIOUS_MEDIA
-
+NEXT_MEDIA:
+- próxima música
+- pular música
+- pula a música
+- passa a música
+- próxima faixa
+- pula essa
+- skip
 Usuário: conte uma piada
 UNKNOWN
 
@@ -275,6 +282,8 @@ def _run_ollama(prompt, *, check=False):
         text=True,
         check=check,
         env=env,
+        encoding="utf-8",
+        errors="replace",
     )
 
 

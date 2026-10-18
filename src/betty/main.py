@@ -1,7 +1,7 @@
 import time
 import threading
 import random
-
+import sys
 
 from .skills import (
     battery_check,
@@ -131,7 +131,7 @@ def _processar_comando(comando):
 
     acao = classify(comando, contexto)
 
-    #print(f"[Betty] IA: {acao!r}")
+    print(f"[Betty] IA: {acao!r}")
 
     history.append(comando)
 
@@ -207,7 +207,9 @@ def _processar_comando(comando):
         responder(resultado)
 
     elif acao == "NEXT_MEDIA":
-        proxima_media()
+        print("[DEBUG] Antes de proxima_media()")
+        resultado = proxima_media()
+        print(f"[DEBUG] Depois de proxima_media(): {resultado}")
 
     elif acao == "PREVIOUS_MEDIA":
         anterior_media()
@@ -392,11 +394,12 @@ def run():
         daemon=True,
     )
     mouse_activity_thread.start()
-    spelling_thread = threading.Thread(
-        target=monitor_spelling,
-        daemon=True,
-    )
-    spelling_thread.start()
+    if sys.platform.startswith("linux"):
+        spelling_thread = threading.Thread(
+            target=monitor_spelling,
+            daemon=True,
+        )
+        spelling_thread.start()
     attention_thread = threading.Thread(
         target=monitor_attention,
         args=(

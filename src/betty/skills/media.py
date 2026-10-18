@@ -1,19 +1,31 @@
 import subprocess as sp
 import sys
 if sys.platform.startswith("win"):
+    import threading
+
     from libspotifyctl import SpotifyClient
+
+    def _run_spotify_action(action, start=False):
+        def worker():
+            with SpotifyClient() as spotify:
+                if start:
+                    spotify.start()
+                getattr(spotify, action)()
+
+        thread = threading.Thread(target=worker, daemon=True)
+        thread.start()
+
     def proxima_media():
-        with SpotifyClient() as spotify:
-            spotify.next()
+        _run_spotify_action("next", start=True)
+
     def anterior_media():
-        with SpotifyClient() as spotify:
-            spotify.previous()
+        _run_spotify_action("previous")
+
     def pausar_temporario():
-        with SpotifyClient() as spotify:
-            spotify.pause()
+        _run_spotify_action("pause")
+
     def retomar_temporario():
-        with SpotifyClient() as spotify:
-            spotify.play()
+        _run_spotify_action("play")
 if sys.platform.startswith("linux"):
     def pausar_temporario():
         sp.Popen(["playerctl", "pause"],stderr=sp.DEVNULL, stdout=sp.DEVNULL)

@@ -1,5 +1,4 @@
-
-import os
+import sys
 import re
 import queue
 import threading
@@ -71,9 +70,20 @@ def generate_audio(text: str) -> np.ndarray:
 
 
 def play_audio(file_path: str):
-    """Reproduz o WAV com aplay."""
-    subprocess.run(["aplay", "-q", file_path], check=True)
+    """EU ODEIO O WINDOWS"""
+    if sys.platform.startswith("win"):
+        import sounddevice as sd
 
+        audio, sample_rate = sf.read(
+            file_path,
+            dtype="float32",
+        )
+
+        sd.play(audio, sample_rate)
+        sd.wait()
+
+    else:
+        subprocess.run(["aplay", "-q", file_path], check=True)
 
 def audio_worker():
     while True:

@@ -2,8 +2,8 @@ import subprocess
 import threading
 import time
 from datetime import datetime
-
-
+import sys
+import pyautogui
 POLL_INTERVAL = 2
 ACTIVE_WITHIN = 5 * 60
 
@@ -32,24 +32,32 @@ def monitor_mouse_activity() -> None:
     last_error = None
 
     while True:
-        try:
-            result = subprocess.run(
-                ["hyprctl", "cursorpos"],
-                capture_output=True,
-                text=True,
-                check=True,
-                timeout=3,
-            )
-            x_text, y_text = result.stdout.strip().split(",", maxsplit=1)
-            position = (int(x_text.strip()), int(y_text.strip()))
-        except FileNotFoundError as error:
-            error_message = f"hyprctl não encontrado: {error}"
-        except subprocess.CalledProcessError as error:
-            error_message = error.stderr.strip() or str(error)
-        except subprocess.TimeoutExpired as error:
-            error_message = f"hyprctl excedeu o tempo limite: {error}"
-        except ValueError as error:
-            error_message = f"posição do cursor inválida: {error}"
+        error_message = None
+        if sys.platform.startswith("linux"):
+            try:
+
+                result = subprocess.run(
+                    ["hyprctl", "cursorpos"],
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                    timeout=3,
+                )
+                x_text, y_text = result.stdout.strip().split(",", maxsplit=1)
+                position = (int(x_text.strip()), int(y_text.strip()))
+            except FileNotFoundError as error:
+                error_message = f"hyprctl não encontrado: {error}"
+            except subprocess.CalledProcessError as error:
+                error_message = error.stderr.strip() or str(error)
+            except subprocess.TimeoutExpired as error:
+                error_message = f"hyprctl excedeu o tempo limite: {error}"
+            except ValueError as error:
+                error_message = f"posição do cursor inválida: {error}"
+        if sys.platform.startswith("win"):
+            try:
+                position = pyautogui.position()
+            except Exception as e:
+                error_message = f"{e}"
         else:
             last_error = None
             current_time = datetime.now()
