@@ -99,6 +99,7 @@ dependencies = [
     { name = "ddgs" },
     { name = "faster-whisper" },
     { name = "kokoro" },
+    { name = "libspotifyctl" },
     { name = "numpy" },
     { name = "ollama" },
     { name = "openai-whisper" },
@@ -119,6 +120,7 @@ requires-dist = [
     { name = "ddgs", specifier = ">=9.16.0" },
     { name = "faster-whisper", specifier = ">=1.2.1" },
     { name = "kokoro", specifier = ">=0.9.4" },
+    { name = "libspotifyctl", specifier = ">=0.3.4" },
     { name = "numpy", specifier = ">=2.5.2" },
     { name = "ollama", specifier = ">=0.6.3" },
     { name = "openai-whisper", specifier = ">=20250625" },
@@ -880,6 +882,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/39/d1/b37165bed9016c19e2cdecf4176fbd902a014fb8a87dd44415438e190969/language_tags-1.3.1.tar.gz", hash = "sha256:b15f05505dad3ad296a1782d5a6083fd141309186094d1ab08095348f4203f37", size = 222642, upload-time = "2026-05-08T11:46:24.418Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/0a/21/b48b9e8408b3faec9fb7cb2f68352c7724add35a980c948eaceb29ac41e4/language_tags-1.3.1-py3-none-any.whl", hash = "sha256:f7db7ef8879523019603e09644a86d95ba60595ce5e5ea82d46e8971b0f68f7b", size = 216654, upload-time = "2026-05-08T11:46:17.836Z" },
+]
+
+[[package]]
+name = "libspotifyctl"
+version = "0.3.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/d0/f4/d8045e6c00499cd7129f526341f803550e3626569cf29a45dde836cc1c65/libspotifyctl-0.3.4.tar.gz", hash = "sha256:ef860e054f583a253f583d717303f4ba610780a202ed5e974a1a4a1960695af2", size = 70636, upload-time = "2026-04-21T00:53:12.997Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a7/72/9518a3825b521c37de2533c933bc8565f3197507a1420c196a729c6d3203/libspotifyctl-0.3.4-py3-none-win_amd64.whl", hash = "sha256:d41b7756e15f66072d61e04d0223e8ac247f191d5402370a8a4da8a850e6afe7", size = 68262, upload-time = "2026-04-21T00:53:11.696Z" },
 ]
 
 [[package]]
