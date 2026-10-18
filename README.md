@@ -63,7 +63,10 @@ Assistente virtual em Python para controle de sistema, voz, pesquisa, automaçã
   - Interpreta texto do usuário, classifica a intenção e executa a ação correta
 
 - `main()`
-  - Loop principal, lendo comandos por teclado ou voz
+  - Loop principal que processa comandos por teclado e voz simultaneamente
+
+- Entrada de texto
+  - Uma thread independente mantém o prompt de teclado ativo enquanto o wake word aguarda no microfone; comandos digitados e falados usam o mesmo interpretador
 
 - `run()`
   - Inicializa os monitores e mantém a Betty ativa
@@ -160,11 +163,24 @@ Assistente virtual em Python para controle de sistema, voz, pesquisa, automaçã
 - `speak(texto)`
   - Converte texto em fala
 
-- `listen(filename="input.wav", duration=5, fs=44100)`
-  - Captura áudio por microfone e transforma em texto/entrada
+- `listen_for_command()`
+  - Monitora o microfone localmente com um modelo português do Vosk, restringindo o vocabulário de ativação a “Betty”; o Whisper só transcreve após a ativação
+
+- `listen(filename="input.wav", duration=5, fs=16000)`
+  - Captura uma entrada curta e a transcreve em português com Whisper
 
 - `audio_worker()`
   - Thread responsável por tocar a fila de áudio
+
+
+```bash
+uv sync
+uv run betty
+```
+### Wake Word
+No Linux, instale o PortAudio do sistema (por exemplo, `sudo apt install libportaudio2`) e permita acesso ao microfone. No Windows, habilite o acesso ao microfone nas configurações de privacidade. Você pode digitar comandos no prompt enquanto a Betty aguarda “Betty” no microfone; ambos passam pela mesma interpretação de intenções. Diga “Betty, pare” ou “Betty, desativar” para interromper a escuta por voz sem desativar a entrada de texto. `Ctrl+C` encerra o processo.
+
+O Whisper usa o modelo `small` em CPU por padrão; defina `BETTY_WHISPER_MODEL=base` se preferir reduzir o consumo de recursos, com possível redução de precisão.
 
 - `clean_text(text)`
   - Limpa o texto antes de gerar fala

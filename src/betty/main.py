@@ -2,6 +2,7 @@ import time
 import threading
 import random
 import sys
+import queue
 
 from .skills import (
     battery_check,
@@ -9,7 +10,9 @@ from .skills import (
     has_battery,
     has_camera,
     speak,
-    listen,
+    listen_for_command,
+    MicrophoneError,
+    WakeWordConfigurationError,
     get_time,
     cpu_info,
     cpu_check,
@@ -56,9 +59,15 @@ from .memory import save_memory, get_memory
 history = []
 print("[Betty] iniciada, eu diria")
 
-modo_voz = False
+modo_voz = True
 task_in_progress = threading.Event()
 screen_task_in_progress = threading.Event()
+voice_listener_active = threading.Event()
+stop_voice_listener = threading.Event()
+voice_listener_thread = None
+voice_commands = queue.Queue()
+text_commands = queue.Queue()
+shutdown_requested = threading.Event()
 battery_available = False
 
 
@@ -117,8 +126,10 @@ def _processar_comando(comando):
         return
 
     if comando.lower().strip() == "teclado":
-        modo_voz = False
-        responder("Modo teclado ativado.")
+        responder(
+            "A entrada por texto está sempre disponível; "
+            "a escuta por voz continua ativa."
+        )
         return
 
     # Comando de parada no modo voz
@@ -131,7 +142,7 @@ def _processar_comando(comando):
 
     acao = classify(comando, contexto)
 
-    print(f"[Betty] IA: {acao!r}")
+    #print(f"[Betty] IA: {acao!r}")
 
     history.append(comando)
 
@@ -342,22 +353,68 @@ def processar_comando(comando):
         task_in_progress.clear()
 
 
-def main():
-    if modo_voz:
-        # Espera o TTS terminar de falar antes de ouvir
-        if is_speaking.is_set():
-            time.sleep(0.1)
+def _listen_for_voice_command():
+    global modo_voz
+
+    try:
+        comando = listen_for_command(
+            stop_event=stop_voice_listener,
+            should_pause=lambda: (
+                is_speaking.is_set()
+                or audio_queue.unfinished_tasks > 0
+                or task_in_progress.is_set()
+                or screen_task_in_progress.is_set()
+            ),
+        )
+    except (WakeWordConfigurationError, MicrophoneError) as error:
+        print(f"[Betty] Modo de voz desativado: {error}")
+        modo_voz = False
+    else:
+        if comando and modo_voz and not stop_voice_listener.is_set():
+            voice_commands.put(comando)
+    finally:
+        voice_listener_active.clear()
+
+
+def _read_text_commands():
+    while not shutdown_requested.is_set():
+        try:
+            comando = input(">>> ")
+        except EOFError:
+            print("[Betty] Entrada de texto encerrada.")
             return
 
-        print("[Betty] Estou Ouvindo, eu diria")
-        comando = listen()
+        if comando.strip():
+            text_commands.put(comando.strip())
+
+
+def main():
+    global voice_listener_thread
+
+    try:
+        comando = voice_commands.get_nowait()
+    except queue.Empty:
+        try:
+            comando = text_commands.get_nowait()
+        except queue.Empty:
+            comando = None
+
+    if comando:
         print(f"[Usuário]: {comando}")
-        if comando:
-            processar_comando(comando)
-    else:
-        comando = input(">>> ")
-        if comando:
-            processar_comando(comando)
+        processar_comando(comando)
+        return
+
+    if modo_voz and not (
+        is_speaking.is_set()
+        or audio_queue.unfinished_tasks > 0
+        or voice_listener_active.is_set()
+    ):
+        voice_listener_active.set()
+        voice_listener_thread = threading.Thread(
+            target=_listen_for_voice_command,
+            daemon=True,
+        )
+        voice_listener_thread.start()
 
 
 def run():
@@ -415,12 +472,23 @@ def run():
     )
     attention_thread.start()
 
+    text_input_thread = threading.Thread(
+        target=_read_text_commands,
+        daemon=True,
+    )
+    text_input_thread.start()
+
     try:
         while True:
             main()
             time.sleep(0.1) # Cpu friendly
 
     except KeyboardInterrupt:
+        shutdown_requested.set()
+        stop_voice_listener.set()
+        if voice_listener_thread is not None:
+            voice_listener_thread.join(timeout=1)
+        text_input_thread.join(timeout=0.2)
         print("\n[Betty] encerrada. Eu diria")
         
 

@@ -1,6 +1,11 @@
 from .battery import battery_check, get_battery, has_battery
 from .tts import speak, audio_queue
-from .stt import listen
+from .stt import (
+    listen,
+    listen_for_command,
+    MicrophoneError,
+    WakeWordConfigurationError,
+)
 from .program import open_program, open_steam_game
 from .system import (
     cpu_info,
