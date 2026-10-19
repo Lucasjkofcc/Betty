@@ -14,6 +14,7 @@ dependencies = [
     "faster-whisper>=1.2.1",
     "kokoro>=0.9.4",
     "libspotifyctl>=0.3.4",
+    "mss>=10.0.0",
     "numpy>=2.5.2",
     "ollama>=0.6.3",
     "openai-whisper>=20250625",

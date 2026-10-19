@@ -1,4 +1,3 @@
-from collections import deque
 from math import gcd
 import json
 import os
@@ -15,12 +14,16 @@ import whisper
 
 
 SAMPLE_RATE = 16_000
-WAKE_WORD_GRAMMAR = ["betty", "beti", "bety", "bete", "[unk]"]
-WAKE_WORD_BLOCK_SIZE = 4_000
-PRE_ROLL_SECONDS = 1.25
+WAKE_WORD_GRAMMAR = ["betty", "beti", "bete"]
+WAKE_WORD_BLOCK_SIZE = 1_600
+COMMAND_START_TIMEOUT = 4
 COMMAND_MAX_DURATION = 10
 COMMAND_END_SILENCE = 0.8
-VAD_RMS_THRESHOLD = 350
+VAD_RMS_THRESHOLD = 120
+WHISPER_INITIAL_PROMPT = (
+    "Betty. Comandos em português brasileiro: que horas são, "
+    "próxima música, pausa a música."
+)
 
 warnings.filterwarnings("ignore", category=UserWarning, module="whisper")
 
@@ -89,6 +92,7 @@ def transcribe_audio(audio, sample_rate=SAMPLE_RATE):
             language="pt",
             temperature=0,
             condition_on_previous_text=False,
+            initial_prompt=WHISPER_INITIAL_PROMPT,
         )
     except (OSError, RuntimeError, ValueError) as error:
         raise TranscriptionError(f"Falha ao transcrever o áudio: {error}") from error
@@ -179,16 +183,41 @@ def _rms(samples):
 
 def _capture_command(
     stream,
-    initial_frames,
+    wake_frame,
     stop_event=None,
     should_pause=None,
 ):
-    frames = list(initial_frames)
+    frames = [wake_frame]
     frame_duration = WAKE_WORD_BLOCK_SIZE / SAMPLE_RATE
     frames_to_end = max(1, round(COMMAND_END_SILENCE / frame_duration))
     max_frames = round(COMMAND_MAX_DURATION * SAMPLE_RATE / WAKE_WORD_BLOCK_SIZE)
     quiet_frames = 0
-    speech_detected = any(_rms(frame) >= VAD_RMS_THRESHOLD for frame in frames)
+    speech_detected = False
+
+    for _ in range(round(COMMAND_START_TIMEOUT / frame_duration)):
+        try:
+            recording, overflowed = stream.read(WAKE_WORD_BLOCK_SIZE)
+        except sd.PortAudioError as error:
+            raise MicrophoneError(
+                f"Falha ao capturar o comando pelo microfone: {error}"
+            ) from error
+
+        if stop_event is not None and stop_event.is_set():
+            return None
+        if should_pause is not None and should_pause():
+            return None
+
+        if overflowed:
+            print("[Betty] Aviso: o microfone perdeu um bloco de áudio.")
+
+        frame = np.asarray(recording, dtype=np.int16).reshape(-1)
+        if _rms(frame) >= VAD_RMS_THRESHOLD:
+            frames.append(frame)
+            speech_detected = True
+            break
+
+    if not speech_detected:
+        return None
 
     for _ in range(max_frames):
         try:
@@ -225,7 +254,7 @@ def _capture_command(
 
 def _remove_wake_word(text):
     return re.sub(
-        r"^\s*(?:betty|beti|bety|bete)\b[\s,.:;!?-]*",
+        r"^\s*(?:betty|beti|bety|bete|batch)\b[\s,.:;!?-]*",
         "",
         text,
         count=1,
@@ -236,12 +265,6 @@ def _remove_wake_word(text):
 def listen_for_command(stop_event=None, should_pause=None):
     """Aguarda Betty localmente e transcreve apenas o comando com o Whisper."""
     recognizer = _create_wake_word_recognizer()
-    pre_roll = deque(
-        maxlen=max(
-            1,
-            round(PRE_ROLL_SECONDS * SAMPLE_RATE / WAKE_WORD_BLOCK_SIZE),
-        )
-    )
     command_audio = None
 
     try:
@@ -265,11 +288,9 @@ def listen_for_command(stop_event=None, should_pause=None):
                     if stop_event is not None and stop_event.is_set():
                         return ""
                     if should_pause is not None and should_pause():
-                        pre_roll.clear()
                         recognizer.Reset()
                         continue
 
-                    pre_roll.append(frame)
                     try:
                         if recognizer.AcceptWaveform(frame.tobytes()):
                             result = json.loads(recognizer.Result())
@@ -285,7 +306,7 @@ def listen_for_command(stop_event=None, should_pause=None):
                     if _contains_wake_word(detected_text):
                         command_audio = _capture_command(
                             stream,
-                            list(pre_roll),
+                            frame,
                             stop_event=stop_event,
                             should_pause=should_pause,
                         )

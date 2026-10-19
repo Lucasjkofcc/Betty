@@ -178,6 +178,8 @@ uv sync
 uv run betty
 ```
 ### Wake Word
+Depois de detectar “Betty”, a escuta aguarda até quatro segundos pelo início do comando e encerra a captura após 0,8 segundo de silêncio. Assim, uma pausa breve entre a ativação e o comando não é confundida com o fim da fala. O Whisper recebe um contexto curto de comandos em português, e a transcrição alternativa “Batch” para a ativação é descartada. Respostas curtas como “horário” também são interpretadas como pedido da hora.
+
 No Linux, instale o PortAudio do sistema (por exemplo, `sudo apt install libportaudio2`) e permita acesso ao microfone. No Windows, habilite o acesso ao microfone nas configurações de privacidade. Você pode digitar comandos no prompt enquanto a Betty aguarda “Betty” no microfone; ambos passam pela mesma interpretação de intenções. Diga “Betty, pare” ou “Betty, desativar” para interromper a escuta por voz sem desativar a entrada de texto. `Ctrl+C` encerra o processo.
 
 O Whisper usa o modelo `small` em CPU por padrão; defina `BETTY_WHISPER_MODEL=base` se preferir reduzir o consumo de recursos, com possível redução de precisão.

@@ -140,7 +140,11 @@ def _processar_comando(comando):
 
     contexto = "\n".join(f"Usuário: {mensagem}" for mensagem in history[-10:])
 
-    acao = classify(comando, contexto)
+    comando_normalizado = comando.casefold().strip(" \t.,!?;:")
+    if comando_normalizado in {"hora", "horas", "horário", "horario"}:
+        acao = "TIME"
+    else:
+        acao = classify(comando, contexto)
 
     #print(f"[Betty] IA: {acao!r}")
 

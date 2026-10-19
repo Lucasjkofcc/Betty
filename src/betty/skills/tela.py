@@ -1,6 +1,8 @@
 import os
 import subprocess
+import sys
 import tempfile
+
 import ollama
 
 
@@ -9,7 +11,13 @@ def screenshot():
         path = image.name
 
     try:
-        subprocess.run(["grim", path], check=True)
+        if sys.platform.startswith("win"):
+            import mss
+
+            with mss.mss() as capture:
+                capture.shot(output=path)
+        else:
+            subprocess.run(["grim", path], check=True)
     except Exception:
         os.remove(path)
         raise
