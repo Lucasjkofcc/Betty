@@ -222,10 +222,8 @@ def _processar_comando(comando):
         responder(resultado)
 
     elif acao == "NEXT_MEDIA":
-        print("[DEBUG] Antes de proxima_media()")
         resultado = proxima_media()
-        print(f"[DEBUG] Depois de proxima_media(): {resultado}")
-
+        responder(resultado)
     elif acao == "PREVIOUS_MEDIA":
         anterior_media()
 

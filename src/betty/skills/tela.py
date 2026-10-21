@@ -14,7 +14,7 @@ def screenshot():
         if sys.platform.startswith("win"):
             import mss
 
-            with mss.mss() as capture:
+            with mss.MSS() as capture:
                 capture.shot(output=path)
         else:
             subprocess.run(["grim", path], check=True)
@@ -51,16 +51,15 @@ def analyze_screen():
                 {
                     "role": "user",
                     "content": (
-                        "Descreva objetivamente o que está visível "
-                        "na captura de tela. Identifique aplicativos, "
-                        "jogos e atividades. Não invente detalhes."
+                        "Describe objectively what is visible in the "
+                        "screenshot. Identify apps, games and activities. "
+                        "Do not invent details."
                     ),
                     "images": [path],
                 }
             ],
         )
-        print(repr(result))
-        return result["message"]["content"].strip()
+        return result.message.content.strip()
     finally:
         subprocess.Popen(["ollama", "stop", "moondream:latest"])
         if os.path.exists(path):
