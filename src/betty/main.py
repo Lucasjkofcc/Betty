@@ -49,6 +49,7 @@ from .skills.tts import is_speaking
 from .qwen import (
     analyze_screen,
     classify,
+    comentar_tela,
     summarize_search,
     conversar,
     personalizar_resposta,
@@ -73,6 +74,8 @@ battery_available = False
 
 
 def responder(texto, *, personalizar=True, fala=None):
+    if texto is None:
+        return
     resposta = personalizar_resposta(texto) if personalizar else texto
     print(f"[Betty] {resposta}")
 
@@ -111,7 +114,7 @@ def monitor_screen():
                 print("[Betty] A análise da tela não retornou uma descrição.")
                 continue
 
-            responder(f"Na tela: {descricao}")
+            responder(comentar_tela(descricao), personalizar=False)
         except Exception as error:
             print(f"[Betty] Erro ao analisar a tela: {error}")
         finally:
@@ -327,7 +330,11 @@ def _processar_comando(comando):
             responder(f"O resultado é: {resultado}.")
     elif acao == "READ_SCREEN":
         resultado = analyze_screen()
-        responder(f"Li: {resultado}.")
+        if not resultado:
+            responder("Não consegui identificar o que aparece na tela.")
+            return
+
+        responder(comentar_tela(resultado), personalizar=False)
 
     elif acao == "UNKNOWN":
         contexto = "\n".join(

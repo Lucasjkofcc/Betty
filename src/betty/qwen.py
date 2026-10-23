@@ -468,6 +468,32 @@ Não use "eu diria"; o sistema adicionará essa expressão ao final.
     result = _run_ollama(prompt)
 
     return finalizar_resposta(garantir_reclamacao(result.stdout.strip()))
+
+
+def comentar_tela(descricao):
+    prompt = f"""
+{personalidade}
+
+Uma análise visual descreveu o conteúdo da tela assim:
+{descricao}
+
+Comente o que aparece na tela como a Betty, em português brasileiro.
+Reaja especificamente aos aplicativos, atividades ou conteúdo descritos, com
+uma reclamação curta, sarcástica e afetuosa. Baseie-se somente na descrição:
+não invente detalhes nem diga que viu algo que não foi mencionado.
+Responda em no máximo duas frases curtas.
+Não use "eu diria"; o sistema adicionará essa expressão ao final.
+Retorne somente o comentário.
+"""
+
+    result = _run_ollama(prompt, check=True)
+    resposta = result.stdout.strip()
+    if not resposta:
+        raise RuntimeError("O Qwen retornou um comentário vazio sobre a tela.")
+
+    return finalizar_resposta(garantir_reclamacao(resposta))
+
+
 def classify(text, history=""):
     return ask_qwen(text, history)
 

@@ -31,7 +31,9 @@ Assistente virtual em Python para controle de sistema, voz, pesquisa, automaçã
   - Emite alertas via voz quando necessário
 
 - `monitor_screen()`
-  - Analisa a tela em intervalos aleatórios e responde com descrição do conteúdo
+  - Analisa a tela em intervalos aleatórios e comenta o conteúdo observado com a personalidade da Betty
+- `READ_SCREEN`
+  - Analisa a tela sob comando e comenta o conteúdo observado sem inventar detalhes
 
 - Sistema de atenção (`skills/attention.py`)
   - Mantém estados de atenção e aumenta a irritação conforme o tempo sem interação
