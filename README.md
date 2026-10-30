@@ -324,4 +324,4 @@ Depois, a Betty pode receber comandos por teclado ou voz, como:
 
 ## Observação
 
-Este projeto é uma continuação indireta do projeto Jarvis, com foco em automação doméstica, IA local e interação de voz com personalidade própria.
+Esse projeto é uma continuação indireta do meu outro projeto chamado Jarvis :D

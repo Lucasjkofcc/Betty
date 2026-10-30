@@ -144,8 +144,9 @@ def _get_wake_word_model():
         )
 
     try:
-        from vosk import Model
+        from vosk import Model, SetLogLevel
 
+        SetLogLevel(-1)
         _wake_word_model = Model(str(model_path))
     except ImportError as error:
         raise WakeWordConfigurationError(
