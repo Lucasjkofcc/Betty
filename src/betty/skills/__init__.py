@@ -18,6 +18,15 @@ from .system import (
     uptime_info,
 )
 from .time import get_time
+from .agenda import (
+    complete_reminder,
+    create_reminder,
+    due_reminders,
+    list_pending_reminders,
+    list_today_reminders,
+    mark_reminder_notified,
+    monitor_reminders,
+)
 from .volume import volume_now, volume_up, volume_down, mute
 from .web import search_web
 from .poweroff import poweroff, reboot

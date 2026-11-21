@@ -31,6 +31,11 @@ from .skills import (
     analyze_screen,
     facial_check,
     get_temperature,
+    create_reminder,
+    list_today_reminders,
+    list_pending_reminders,
+    complete_reminder,
+    monitor_reminders,
     pausar_temporario,
     retomar_temporario,
     proxima_media,
@@ -53,6 +58,7 @@ from .qwen import (
     summarize_search,
     conversar,
     personalizar_resposta,
+    finalizar_resposta,
 )
 
 from .memory import save_memory, get_memory
@@ -206,6 +212,81 @@ def _processar_comando(comando):
             personalizar=False,
             fala=f"{temperatura} graus Celsius",
         )
+
+    elif acao.startswith("CREATE_REMINDER|"):
+        partes = acao.split("|", 3)
+        if len(partes) != 4:
+            responder("Diga a data, o horário e o que devo lembrar.")
+            return
+
+        _, data_hora, recorrencia, descricao = partes
+        try:
+            lembrete = create_reminder(data_hora, recorrencia, descricao)
+        except (OSError, RuntimeError, ValueError) as error:
+            responder(f"Não consegui criar esse lembrete: {error}")
+            return
+
+        data = time.strftime(
+            "%d/%m/%Y",
+            time.strptime(lembrete["due_at"], "%Y-%m-%dT%H:%M"),
+        )
+        horario = lembrete["due_at"][11:16]
+        responder(
+            f"Lembrete {lembrete['id']} anotado: {lembrete['title']}, "
+            f"em {data} às {horario}."
+        )
+
+    elif acao == "REMINDER_DETAILS":
+        responder("Diga também a data, o horário e o que devo lembrar.")
+
+    elif acao == "TODAY_AGENDA":
+        try:
+            lembretes = list_today_reminders()
+        except (OSError, RuntimeError, ValueError) as error:
+            responder(f"Não consegui consultar a agenda: {error}")
+            return
+
+        if not lembretes:
+            responder("Sua agenda de hoje está vazia. Aproveite enquanto pode.")
+            return
+
+        itens = [
+            f"{lembrete['due_at'][11:16]} — {lembrete['title']} "
+            f"(lembrete {lembrete['id']})"
+            for lembrete in lembretes
+        ]
+        responder("Para hoje: " + "; ".join(itens) + ".")
+
+    elif acao == "PENDING_REMINDERS":
+        try:
+            lembretes = list_pending_reminders()
+        except (OSError, RuntimeError, ValueError) as error:
+            responder(f"Não consegui consultar os lembretes: {error}")
+            return
+
+        if not lembretes:
+            responder("Você não tem lembretes pendentes. Que milagre.")
+            return
+
+        itens = [
+            f"número {lembrete['id']}: {lembrete['title']}, "
+            f"{lembrete['due_at'][:16].replace('T', ' às ')}"
+            for lembrete in lembretes
+        ]
+        responder("Pendentes: " + "; ".join(itens) + ".")
+
+    elif acao.startswith("COMPLETE_REMINDER|"):
+        try:
+            identificador = int(acao.split("|", 1)[1].strip())
+            concluido = complete_reminder(identificador)
+        except (IndexError, OSError, RuntimeError, ValueError) as error:
+            responder(f"Não consegui concluir esse lembrete: {error}")
+            return
+
+        if concluido:
+            responder(f"O lembrete {identificador} foi concluído.")
+        else:
+            responder(f"Não encontrei um lembrete pendente com o número {identificador}.")
 
     elif acao.startswith("VOLUME_DOWN"):
         partes = acao.split()
@@ -426,6 +507,23 @@ def main():
         voice_listener_thread.start()
 
 
+def _announce_reminders(lembretes):
+    task_in_progress.set()
+    try:
+        itens = ", ".join(
+            f"{lembrete['title']}, agendado para "
+            f"{lembrete['due_at'].replace('T', ' às ')}"
+            for lembrete in lembretes
+        )
+        mensagem = (
+            f"Mestre, está na hora de {itens}. Não me faça repetir, "
+            "criatura problemática, eu diria."
+        )
+        responder(finalizar_resposta(mensagem), personalizar=False)
+    finally:
+        task_in_progress.clear()
+
+
 def run():
     global battery_available
 
@@ -480,6 +578,20 @@ def run():
         daemon=True,
     )
     attention_thread.start()
+    reminder_thread = threading.Thread(
+        target=monitor_reminders,
+        args=(
+            lambda: (
+                task_in_progress.is_set()
+                or screen_task_in_progress.is_set()
+                or is_speaking.is_set()
+                or audio_queue.unfinished_tasks > 0
+            ),
+            lambda lembretes: _announce_reminders(lembretes),
+        ),
+        daemon=True,
+    )
+    reminder_thread.start()
 
     text_input_thread = threading.Thread(
         target=_read_text_commands,

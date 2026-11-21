@@ -1,7 +1,8 @@
+from datetime import datetime
 import os
+import re
 import subprocess
 from pathlib import Path
-import re
 
 from .skills.tela import analyze_screen
 
@@ -76,6 +77,11 @@ BATTERY
 CPU
 UPTIME
 TEMPERATURE
+CREATE_REMINDER|<YYYY-MM-DDTHH:MM>|<once|daily|weekly>|<descrição>
+TODAY_AGENDA
+PENDING_REMINDERS
+COMPLETE_REMINDER|<id>
+REMINDER_DETAILS
 VOLUME_NOW
 VOLUME_UP
 VOLUME_DOWN
@@ -152,14 +158,15 @@ CALCULATE|100 / 4
 REGRAS IMPORTANTES SOBRE MEMÓRIA:
 
 1. SAVE_MEMORY é usado SOMENTE quando o usuário está INFORMANDO algo novo sobre si mesmo ou pedindo explicitamente para você lembrar de algo.
+2. Pedidos com data e horário para compromissos ou tarefas são lembretes da agenda, não memória pessoal.
 
-2. GET_MEMORY é usado quando o usuário está PERGUNTANDO sobre algo que pode estar salvo na memória.
+3. GET_MEMORY é usado quando o usuário está PERGUNTANDO sobre algo que pode estar salvo na memória.
 
-3. NUNCA use SAVE_MEMORY para responder uma pergunta.
+4. NUNCA use SAVE_MEMORY para responder uma pergunta.
 
-4. NUNCA invente um valor para uma memória.
+5. NUNCA invente um valor para uma memória.
 
-5. GET_MEMORY deve ser usado SOMENTE quando o usuário perguntar sobre
+6. GET_MEMORY deve ser usado SOMENTE quando o usuário perguntar sobre
 informações pessoais que provavelmente foram salvas anteriormente.
 
 Exemplos:
@@ -236,6 +243,41 @@ TEMPERATURE
 Usuário: temperatura atual
 TEMPERATURE
 
+AGENDA E LEMBRETES:
+- Para marcar um compromisso ou criar um lembrete, use CREATE_REMINDER.
+- Interprete datas relativas usando a data e a hora locais fornecidas abaixo.
+- Converta a data e hora para YYYY-MM-DDTHH:MM, no horário local do usuário.
+- Use "once" para um lembrete único, "daily" para "todo dia" e "weekly"
+  para "toda semana".
+- Em lembretes recorrentes, escolha a próxima ocorrência futura no horário
+  informado.
+- Preserve a descrição da tarefa sem incluir a data, o horário ou a recorrência.
+- Não invente uma data, um horário ou uma descrição. Se algum desses dados
+  estiver ausente ou ambíguo, responda REMINDER_DETAILS.
+- Substitua todos os marcadores de formato pelos valores reais; nunca retorne
+  texto entre sinais de menor e maior.
+- Para "o que tenho hoje", "agenda de hoje" ou compromissos de hoje,
+  responda TODAY_AGENDA.
+- Para consultar tarefas ou lembretes pendentes, responda PENDING_REMINDERS.
+- Para concluir um lembrete, use COMPLETE_REMINDER|<id>. Se o usuário não
+  identificar qual lembrete concluiu, responda PENDING_REMINDERS.
+
+Exemplos:
+Usuário: me lembra amanhã às 14 de pagar a conta
+CREATE_REMINDER|<data de amanhã>T14:00|once|pagar a conta
+
+Usuário: todo dia às 9 me lembra de tomar o remédio
+CREATE_REMINDER|<data de hoje>T09:00|daily|tomar o remédio
+
+Usuário: o que tenho para hoje?
+TODAY_AGENDA
+
+Usuário: quais tarefas ainda estão pendentes?
+PENDING_REMINDERS
+
+Usuário: concluí o lembrete 3
+COMPLETE_REMINDER|3
+
 Usuário: próxima música
 NEXT_MEDIA
 
@@ -289,6 +331,10 @@ def _run_ollama(prompt, *, check=False):
 
 def ask_qwen(text, history=""):
     prompt = SYSTEM_PROMPT
+    prompt += (
+        "\nData e hora locais atuais: "
+        f"{datetime.now().astimezone().strftime('%Y-%m-%d %H:%M %z')}."
+    )
 
     if history:
         prompt += f"\n\nHistórico recente:\n{history}"

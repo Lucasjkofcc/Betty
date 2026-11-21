@@ -113,7 +113,21 @@ Assistente virtual em Python para controle de sistema, voz, pesquisa, automaçã
 - `get_memory(key)`
   - Recupera um valor da memória
 
-### 5. Sistema e hardware
+### 5. Agenda e lembretes
+
+- Cria compromissos e lembretes únicos, diários ou semanais a partir de comandos
+  em português com data e horário explícitos ou relativos, como "amanhã às 14".
+- Avisa por voz quando um lembrete vence; lembretes recorrentes avançam para a
+  próxima ocorrência e tarefas continuam pendentes até serem concluídas.
+- `TODAY_AGENDA` consulta os compromissos de hoje.
+- `PENDING_REMINDERS` lista os lembretes pendentes e seus números.
+- `COMPLETE_REMINDER|<id>` conclui um lembrete pendente.
+- Os dados ficam em `agenda.json`, no diretório de execução, e esse arquivo é
+  ignorado pelo Git.
+- Exemplos: "Betty, me lembra amanhã às 14 de pagar a conta", "o que tenho
+  para hoje?" e "quais tarefas ainda estão pendentes?".
+
+### 6. Sistema e hardware
 
 - `get_time()`
   - Retorna a hora atual
@@ -160,7 +174,7 @@ Assistente virtual em Python para controle de sistema, voz, pesquisa, automaçã
 - `get_temperature()`
   - Temperatura atual do sistema
 
-### 6. Áudio e voz
+### 7. Áudio e voz
 
 - `speak(texto)`
   - Converte texto em fala
@@ -201,7 +215,7 @@ O Whisper usa o modelo `small` em CPU por padrão; defina `BETTY_WHISPER_MODEL=b
 - `play_audio(file_path)`
   - Reproduz arquivo de áudio gerado
 
-### 7. Volume, mídia e reprodução
+### 8. Volume, mídia e reprodução
 
 - `volume_now()`
   - Retorna o volume atual
@@ -237,7 +251,7 @@ O Whisper usa o modelo `small` em CPU por padrão; defina `BETTY_WHISPER_MODEL=b
   - Comandos simples para controle de mídia via `playerctl`
   - Ações: `proxima`, `anterior`, `pausar`, `continuar`
 
-### 8. Programas, jogos e desktop
+### 9. Programas, jogos e desktop
 
 - `open_program(program)`
   - Abre um programa ou aplicativo
@@ -251,13 +265,13 @@ O Whisper usa o modelo `small` em CPU por padrão; defina `BETTY_WHISPER_MODEL=b
 - `reboot()`
   - Reinicia o computador
 
-### 9. Pesquisa na web
+### 10. Pesquisa na web
 
 - `search_web(query: str, max_results: int = 5)`
   - Pesquisa na web via DuckDuckGo
   - Retorna título, URL e snippet dos resultados
 
-### 10. Tela e OCR
+### 11. Tela e OCR
 
 - `screenshot()`
   - Captura a tela
@@ -274,12 +288,12 @@ O Whisper usa o modelo `small` em CPU por padrão; defina `BETTY_WHISPER_MODEL=b
 - `escrever_arquivo(caminho, conteudo)`
   - Escreve conteúdo em um arquivo
 
-### 11. Matemática e cálculos
+### 12. Matemática e cálculos
 
 - `calcular(expressao)`
   - Resolve expressões matemáticas em Python
 
-### 12. Comandos que a Betty entende
+### 13. Comandos que a Betty entende
 
 A Betty classifica comandos em ações como:
 
@@ -288,6 +302,10 @@ A Betty classifica comandos em ações como:
 - `CPU`
 - `UPTIME`
 - `TEMPERATURE`
+- `CREATE_REMINDER|<YYYY-MM-DDTHH:MM>|<once|daily|weekly>|<descrição>`
+- `TODAY_AGENDA`
+- `PENDING_REMINDERS`
+- `COMPLETE_REMINDER|<id>`
 - `VOLUME_NOW`
 - `VOLUME_UP`
 - `VOLUME_DOWN`

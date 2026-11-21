@@ -4,7 +4,7 @@ from retry_requests import retry
 
 
 def get_temperature():
-    cache_session = requests_cache.CachedSession(".cache", expire_after=3600)
+    cache_session = requests_cache.CachedSession(".cache", expire_after=10 * 60)
     retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
     openmeteo = openmeteo_requests.Client(session=retry_session)
 
